@@ -13,7 +13,7 @@ class OrcidProvider(Provider):
     refresh = True
 
     def get_options(self, project, search=None, user=None, site=None):
-        if search:
+        if search and len(search) > 3:
             url = getattr(settings, 'ORCID_PROVIDER_URL', 'https://pub.orcid.org/v3.0/').rstrip('/')
             headers = getattr(settings, 'ORCID_PROVIDER_HEADERS', {})
             headers['Accept'] = 'application/json'
@@ -49,6 +49,8 @@ class OrcidProvider(Provider):
         return text
 
     def get_search(self, search):
+        search = search.removeprefix('https://orcid.org/')
+
         # reverse get_text to perform the search, remove everything after ( or [
         match = re.match(r'^[^([]+', search)
         if match:

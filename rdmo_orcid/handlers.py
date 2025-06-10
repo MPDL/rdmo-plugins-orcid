@@ -8,6 +8,36 @@ import requests
 from rdmo.domain.models import Attribute
 from rdmo.projects.models import Value
 
+def get_ror_id(disambiguated_organization):
+    try:
+        disambiguation_source = disambiguated_organization.get('disambiguation-source')
+        disambiguation_id = disambiguated_organization.get('disambiguated-organization-identifier')
+    except:
+        return None
+
+    if disambiguation_source == 'ROR':
+        return disambiguation_id
+    
+    elif disambiguation_source in ['GRID', 'FUNDREF']:
+        url = getattr(settings, 'ROR_PROVIDER_URL', 'https://api.ror.org/v1/').rstrip('/')
+        headers = getattr(settings, 'ROR_PROVIDER_HEADERS', {})
+
+        response = requests.get(f'{url}/organizations?query="{disambiguation_id}"', headers=headers)
+
+        try:
+            data = response.json()
+        except requests.exceptions.JSONDecodeError:
+            pass
+
+        if data.get('number_of_results') == 1:
+            ror_id = data.get('items')[0].get('id')
+            return ror_id
+
+        else:
+            print(f'{len(data.get("items"))} results for id: {disambiguation_id}')
+            print(data.get('items'))
+
+    return None
 
 @receiver(post_save, sender=Value)
 def value_handler(sender, request=None, instance=None, **kwargs):
@@ -72,67 +102,44 @@ def value_handler(sender, request=None, instance=None, **kwargs):
                     }
                 )
 
-            if 'affiliation' in attribute_map or 'role' in attribute_map:
-                affiliations = {}
-                roles = []
+            if 'employment' in attribute_map:
+                employments = []
                 for affiliation in dpath.get(data, '/activities-summary/employments/affiliation-group'):
                     for summaries in affiliation.get('summaries'):
                         if dpath.get(summaries, '/employment-summary/end-date') is None:
                             a = dpath.get(summaries, '/employment-summary/organization/name')
                             role = dpath.get(summaries, '/employment-summary/role-title')
-                            a_roles = affiliations.get(a, [])
-                            if role != None:
-                                a_roles.append(role)
-                                roles.append(role)
+                            disambiguated_organization = dpath.get(summaries, '/employment-summary/organization/disambiguated-organization')
+                            
+                            ror_id = get_ror_id(disambiguated_organization)
+                            if ror_id:
+                                employments.append((role, a, ror_id))
+                            else:
+                                employments.append((role, None, ror_id))
 
-                            affiliations[a] = a_roles
+                uris = [
+                    'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/role', 
+                    'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/affiliation',
+                    'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/affiliation/ror-id'
+                ]
+                for set_index, employment in enumerate(employments):
+                    for i, e in enumerate(employment):
+                        if e != None:
+                            Value.objects.update_or_create(
+                                project=instance.project,
+                                attribute=Attribute.objects.get(uri=uris[i]),
+                                set_prefix=instance.set_index,
+                                set_index=set_index,
+                                defaults={
+                                    'text': e
+                                }
+                            )
 
-                if 'role' in attribute_map:
-                    attribute = Attribute.objects.get(uri=attribute_map['role'])
-                    for collection_index, role in enumerate(roles):
-                        r_affiliation = next(k for k,v in affiliations.items() if role in v)
-                        Value.objects.update_or_create(
-                            project=instance.project,
-                            attribute=attribute,
-                            set_prefix=instance.set_prefix,
-                            set_index=instance.set_index,
-                            collection_index=collection_index,
-                            external_id=r_affiliation,
-                            defaults={
-                                'text': role
-                            }
-                        )
-
-                    # delete surplus collection_indexes
+                # delete surplus collection_indexes
+                for uri in uris:
                     Value.objects.filter(
                         project=instance.project,
                         snapshot=None,
-                        set_prefix=instance.set_prefix,
-                        set_index=instance.set_index,
-                        attribute=attribute
-                    ).exclude(collection_index__in=range(len(roles))).delete()
-
-                if 'affiliation' in attribute_map:
-                    attribute = Attribute.objects.get(uri=attribute_map['affiliation'])
-                    for collection_index, affiliation in enumerate(affiliations.keys()):
-                        role_string = ', '.join(affiliations[affiliation])
-                        Value.objects.update_or_create(
-                            project=instance.project,
-                            attribute=attribute,
-                            set_prefix=instance.set_prefix,
-                            set_index=instance.set_index,
-                            collection_index=collection_index,
-                            external_id=role_string,
-                            defaults={
-                                'text': affiliation
-                            }
-                        )
-
-                    # delete surplus collection_indexes
-                    Value.objects.filter(
-                        project=instance.project,
-                        snapshot=None,
-                        set_prefix=instance.set_prefix,
-                        set_index=instance.set_index,
-                        attribute=attribute
-                    ).exclude(collection_index__in=range(len(affiliations))).delete()
+                        set_prefix=instance.set_index,
+                        attribute=Attribute.objects.get(uri=uri)
+                    ).exclude(set_index__in=range(len(employments))).delete()

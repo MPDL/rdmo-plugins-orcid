@@ -1,8 +1,7 @@
 import re
+import requests
 
 from django.conf import settings
-
-import requests
 
 from rdmo.options.providers import Provider
 

@@ -33,10 +33,6 @@ def get_ror_id(disambiguated_organization):
             ror_id = data.get('items')[0].get('id')
             return ror_id
 
-        else:
-            print(f'{len(data.get("items"))} results for id: {disambiguation_id}')
-            print(data.get('items'))
-
     return None
 
 @receiver(post_save, sender=Value)

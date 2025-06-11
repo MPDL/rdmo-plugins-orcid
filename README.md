@@ -10,7 +10,7 @@ Setup
 Install the plugin in your RDMO virtual environment using pip (directly from GitHub):
 
 ```bash
-pip install git+https://github.com/rdmorganiser/rdmo-plugins-orcid
+pip install git+https://github.com/MPDL/rdmo-plugins-orcid@dev
 ```
 
 Add the `rdmo_orcid` app to `INSTALLED_APPS` and the plugin to `OPTIONSET_PROVIDERS` in `config/settings/local.py`:

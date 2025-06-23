@@ -13,13 +13,12 @@ maintainers = [
 description = "Plugin for RDMO to query the ORCID API"
 readme = "README.md"
 requires-python = ">=3.9"
-license = {file = "LICENSE"}
+license-files = ["LICENSE"]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Environment :: Web Environment',
     'Framework :: Django :: 2.2',
     'Intended Audience :: Science/Research',
-    'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
     "Programming Language :: Python :: 3 :: Only",
     'Programming Language :: Python :: 3.9',
@@ -44,8 +43,11 @@ dev = [
     "twine",
 ]
 
-[tool.setuptools]
-packages = ["rdmo_orcid"]
+[tool.setuptools.packages.find]
+include = ["rdmo_orcid*"]
+
+[tool.setuptools.package-data]
+"*" = ["*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "rdmo_orcid.__version__"}

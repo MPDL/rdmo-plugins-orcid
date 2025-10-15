@@ -65,38 +65,22 @@ def value_handler(sender, request=None, instance=None, **kwargs):
             except (requests.exceptions.RequestException, requests.exceptions.HTTPError):
                 return
             
-            if 'orcid_id' in attribute_map:
-                Value.objects.update_or_create(
-                    project=instance.project,
-                    attribute=Attribute.objects.get(uri=attribute_map['orcid_id']),
-                    set_prefix=instance.set_prefix,
-                    set_index=instance.set_index,
-                    defaults={
-                        'text': dpath.get(data, '/orcid-identifier/uri')
-                    }
-                )
-
-            if 'given_name' in attribute_map:
-                Value.objects.update_or_create(
-                    project=instance.project,
-                    attribute=Attribute.objects.get(uri=attribute_map['given_name']),
-                    set_prefix=instance.set_prefix,
-                    set_index=instance.set_index,
-                    defaults={
-                        'text': dpath.get(data, '/person/name/given-names/value')
-                    }
-                )
-
-            if 'family_name' in attribute_map:
-                Value.objects.update_or_create(
-                    project=instance.project,
-                    attribute=Attribute.objects.get(uri=attribute_map['family_name']),
-                    set_prefix=instance.set_prefix,
-                    set_index=instance.set_index,
-                    defaults={
-                        'text': dpath.get(data, '/person/name/family-name/value')
-                    }
-                )
+            for key, path in [
+                ('orcid_id', '/orcid-identifier/uri'), 
+                ('given_name', '/person/name/given-names/value'), 
+                ('family_name', '/person/name/family-name/value')
+            ]:
+                if key in attribute_map:
+                    Value.objects.update_or_create(
+                        project=instance.project,
+                        attribute=Attribute.objects.get(uri=attribute_map[key]),
+                        set_prefix=instance.set_prefix,
+                        set_index=instance.set_index,
+                        set_collection=True,
+                        defaults={
+                            'text': dpath.get(data, path)
+                        }
+                    )
 
             if 'employment' in attribute_map:
                 employments = []
@@ -126,6 +110,7 @@ def value_handler(sender, request=None, instance=None, **kwargs):
                                 attribute=Attribute.objects.get(uri=uris[i]),
                                 set_prefix=instance.set_index,
                                 set_index=set_index,
+                                set_collection=True,
                                 defaults={
                                     'text': e
                                 }

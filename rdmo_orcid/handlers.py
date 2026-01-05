@@ -6,6 +6,7 @@ import dpath
 import requests
 
 from rdmo.domain.models import Attribute
+from rdmo.options.models import Option
 from rdmo.projects.models import Value
 
 def get_ror_id(disambiguated_organization):
@@ -51,7 +52,7 @@ def value_handler(sender, request=None, instance=None, **kwargs):
 
     # loop over ORCID_PROVIDER_MAP and check if the value instance attribute is found
     for attribute_map in settings.ORCID_PROVIDER_MAP:
-        if 'orcid' in attribute_map and instance.attribute.uri == attribute_map['orcid']:
+        if 'orcid_autocomplete' in attribute_map and instance.attribute.uri == attribute_map['orcid_autocomplete']:
             # query the orcid api for the record for this orcid
             try:
                 url = getattr(settings, 'ORCID_PROVIDER_URL', 'https://pub.orcid.org/v3.0/').rstrip('/')
@@ -64,21 +65,35 @@ def value_handler(sender, request=None, instance=None, **kwargs):
                 data = response.json()
             except (requests.exceptions.RequestException, requests.exceptions.HTTPError):
                 return
+
+            Value.objects.update_or_create(
+                project=instance.project,
+                attribute=Attribute.objects.get(uri='https://rdmo.mpdl.mpg.de/terms/domain/project/partner/type'),
+                set_prefix=instance.set_prefix,
+                set_index=instance.set_index,
+                set_collection=True,
+                option=Option.objects.get(uri='https://rdmo.mpdl.mpg.de/terms/options/partner-types/person')
+            )
             
             for key, path in [
-                ('orcid_id', '/orcid-identifier/uri'), 
+                ('orcid', '/orcid-identifier/uri'), 
                 ('given_name', '/person/name/given-names/value'), 
                 ('family_name', '/person/name/family-name/value')
             ]:
                 if key in attribute_map:
-                    Value.objects.update_or_create(
+                    print(f'key: {key}')
+                    print(f'instance.set_prefix: {instance.set_prefix}')
+                    print(f'instance.set_index: {instance.set_index}')
+                    print('---')
+                    print('')
+                    value, created = Value.objects.update_or_create(
                         project=instance.project,
                         attribute=Attribute.objects.get(uri=attribute_map[key]),
                         set_prefix=instance.set_prefix,
                         set_index=instance.set_index,
-                        set_collection=True,
                         defaults={
-                            'text': dpath.get(data, path)
+                            'text': dpath.get(data, path),
+                            'set_collection': True
                         }
                     )
 
@@ -110,9 +125,9 @@ def value_handler(sender, request=None, instance=None, **kwargs):
                                 attribute=Attribute.objects.get(uri=uris[i]),
                                 set_prefix=instance.set_index,
                                 set_index=set_index,
-                                set_collection=True,
                                 defaults={
-                                    'text': e
+                                    'text': e,
+                                    'set_collection': True
                                 }
                             )
 

@@ -81,12 +81,7 @@ def value_handler(sender, request=None, instance=None, **kwargs):
                 ('family_name', '/person/name/family-name/value')
             ]:
                 if key in attribute_map:
-                    print(f'key: {key}')
-                    print(f'instance.set_prefix: {instance.set_prefix}')
-                    print(f'instance.set_index: {instance.set_index}')
-                    print('---')
-                    print('')
-                    value, created = Value.objects.update_or_create(
+                    Value.objects.update_or_create(
                         project=instance.project,
                         attribute=Attribute.objects.get(uri=attribute_map[key]),
                         set_prefix=instance.set_prefix,

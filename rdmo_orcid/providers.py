@@ -15,7 +15,7 @@ class OrcidProvider(Provider):
     refresh = True
 
     def get_options(self, project, search=None, user=None, site=None):
-        if search and len(search) > 3:
+        if search:
             url = getattr(settings, 'ORCID_PROVIDER_URL', 'https://pub.orcid.org/v3.0/').rstrip('/')
             headers = getattr(settings, 'ORCID_PROVIDER_HEADERS', {})
             headers['Accept'] = 'application/json'
@@ -45,7 +45,7 @@ class OrcidProvider(Provider):
     def get_text(self, item):
         orcid_id = item['orcid-id']
         orcid_img = static('accounts/img/orcid_16x16.png')
-        orcid_link = f'<a href="https://orcid.org/{orcid_id}"><img src="{orcid_img}" alt="orcid logo" /></a>'
+        orcid_link = f'<a href="https://orcid.org/{orcid_id}" target="_blank" ><img src="{orcid_img}" alt="orcid logo" /></a>'
         text = '{given-names} {family-names} {orcid_link}'.format(**item, orcid_link=orcid_link)
         if item.get('institution-name'):
             institutions = ', '.join(item['institution-name'][:2])

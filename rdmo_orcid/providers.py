@@ -14,10 +14,6 @@ class OrcidProvider(Provider):
     search = True
     refresh = True
 
-    widget_props = {
-        'noOptionsMessage_text': _('No options found: Try adding the affiliation')
-    }
-
     def get_options(self, project, search=None, user=None, site=None):
         if search and len(search) > 3:
             url = getattr(settings, 'ORCID_PROVIDER_URL', 'https://pub.orcid.org/v3.0/').rstrip('/')

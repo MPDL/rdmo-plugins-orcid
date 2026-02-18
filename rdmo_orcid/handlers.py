@@ -37,7 +37,7 @@ def get_ror_id(disambiguated_organization):
     return None
 
 @receiver(post_save, sender=Value)
-def value_handler(sender, request=None, instance=None, **kwargs):
+def orcid_handler(sender, request=None, instance=None, **kwargs):
     # check for ORCID_PROVIDER_MAP
     if not getattr(settings, 'ORCID_PROVIDER_MAP', None):
         return

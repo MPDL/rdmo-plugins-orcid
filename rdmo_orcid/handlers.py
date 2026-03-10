@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 import dpath
@@ -7,10 +6,12 @@ import requests
 
 from rdmo.domain.models import Attribute
 from rdmo.projects.models import Value
+from rdmo.projects.signals import value_created, value_updated
 
 
-@receiver(post_save, sender=Value)
-def orcid_handler(sender, request=None, instance=None, **kwargs):
+@receiver(value_created, sender=Value)
+@receiver(value_updated, sender=Value)
+def orcid_handler(signal, sender, instance=None, **kwargs):
     # check for ORCID_PROVIDER_MAP
     if not getattr(settings, 'ORCID_PROVIDER_MAP', None):
         return
@@ -42,6 +43,7 @@ def orcid_handler(sender, request=None, instance=None, **kwargs):
             if 'given_name' in attribute_map:
                 Value.objects.update_or_create(
                     project=instance.project,
+                    snapshot=None,
                     attribute=Attribute.objects.get(uri=attribute_map['given_name']),
                     set_prefix=instance.set_prefix,
                     set_index=instance.set_index,
@@ -53,6 +55,7 @@ def orcid_handler(sender, request=None, instance=None, **kwargs):
             if 'family_name' in attribute_map:
                 Value.objects.update_or_create(
                     project=instance.project,
+                    snapshot=None,
                     attribute=Attribute.objects.get(uri=attribute_map['family_name']),
                     set_prefix=instance.set_prefix,
                     set_index=instance.set_index,
@@ -73,6 +76,7 @@ def orcid_handler(sender, request=None, instance=None, **kwargs):
                 for collection_index, affiliation in enumerate(affiliations):
                     Value.objects.update_or_create(
                         project=instance.project,
+                        snapshot=None,
                         attribute=attribute,
                         set_prefix=instance.set_prefix,
                         set_index=instance.set_index,

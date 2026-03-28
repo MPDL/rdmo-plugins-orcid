@@ -9,7 +9,6 @@ from rdmo.options.providers import Provider
 
 
 class OrcidProvider(Provider):
-
     search = True
     refresh = True
 
@@ -19,11 +18,15 @@ class OrcidProvider(Provider):
             headers = getattr(settings, 'ORCID_PROVIDER_HEADERS', {})
             headers['Accept'] = 'application/json'
 
-            response = requests.get(url + '/expanded-search/', params={
-                'q': self.get_search(search),
-                'start': 0,
-                'rows': 10
-            }, headers=headers)
+            response = requests.get(
+                url + '/expanded-search/',
+                params={
+                    'q': self.get_search(search),
+                    'start': 0,
+                    'rows': 10,
+                },
+                headers=headers,
+            )
 
             try:
                 data = response.json()
@@ -36,7 +39,8 @@ class OrcidProvider(Provider):
                             'id': item['orcid-id'],
                             'text': self.get_text(item),
                             'help': self.get_help(item),
-                        } for item in data['expanded-result']
+                        }
+                        for item in data['expanded-result']
                     ]
 
         # return an empty list by default

@@ -48,8 +48,8 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                     set_prefix=instance.set_prefix,
                     set_index=instance.set_index,
                     defaults={
-                        'text': dpath.get(data, '/person/name/given-names/value')
-                    }
+                        'text': dpath.get(data, '/person/name/given-names/value'),
+                    },
                 )
 
             if 'family_name' in attribute_map:
@@ -60,8 +60,8 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                     set_prefix=instance.set_prefix,
                     set_index=instance.set_index,
                     defaults={
-                        'text': dpath.get(data, '/person/name/family-name/value')
-                    }
+                        'text': dpath.get(data, '/person/name/family-name/value'),
+                    },
                 )
 
             if 'affiliation' in attribute_map:
@@ -82,8 +82,8 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                         set_index=instance.set_index,
                         collection_index=collection_index,
                         defaults={
-                            'text': affiliation
-                        }
+                            'text': affiliation,
+                        },
                     )
 
                 # delete surplus collection_indexes
@@ -92,5 +92,7 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                     snapshot=None,
                     set_prefix=instance.set_prefix,
                     set_index=instance.set_index,
-                    attribute=attribute
-                ).exclude(collection_index__in=range(len(affiliations))).delete()
+                    attribute=attribute,
+                ).exclude(
+                    collection_index__in=range(len(affiliations)),
+                ).delete()

@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 import dpath
@@ -8,6 +7,7 @@ import requests
 from rdmo.domain.models import Attribute
 from rdmo.options.models import Option
 from rdmo.projects.models import Value
+from rdmo.projects.signals import value_created, value_updated
 
 def get_ror_id(disambiguated_organization):
     try:
@@ -36,8 +36,9 @@ def get_ror_id(disambiguated_organization):
 
     return None
 
-@receiver(post_save, sender=Value)
-def orcid_handler(sender, request=None, instance=None, **kwargs):
+@receiver(value_created, sender=Value)
+@receiver(value_updated, sender=Value)
+def orcid_handler(signal, sender, instance=None, **kwargs):
     # check for ORCID_PROVIDER_MAP
     if not getattr(settings, 'ORCID_PROVIDER_MAP', None):
         return
@@ -68,11 +69,14 @@ def orcid_handler(sender, request=None, instance=None, **kwargs):
 
             Value.objects.update_or_create(
                 project=instance.project,
+                snapshot=None,
                 attribute=Attribute.objects.get(uri='https://rdmo.mpdl.mpg.de/terms/domain/project/partner/type'),
                 set_prefix=instance.set_prefix,
                 set_index=instance.set_index,
-                set_collection=True,
-                option=Option.objects.get(uri='https://rdmo.mpdl.mpg.de/terms/options/partner-types/person')
+                defaults={
+                    'set_collection': True,
+                    'option': Option.objects.get(uri='https://rdmo.mpdl.mpg.de/terms/options/partner-types/person')
+                }
             )
             
             for key, path in [
@@ -83,6 +87,7 @@ def orcid_handler(sender, request=None, instance=None, **kwargs):
                 if key in attribute_map:
                     Value.objects.update_or_create(
                         project=instance.project,
+                        snapshot=None,
                         attribute=Attribute.objects.get(uri=attribute_map[key]),
                         set_prefix=instance.set_prefix,
                         set_index=instance.set_index,
@@ -117,6 +122,7 @@ def orcid_handler(sender, request=None, instance=None, **kwargs):
                         if e != None:
                             Value.objects.update_or_create(
                                 project=instance.project,
+                                snapshot=None,
                                 attribute=Attribute.objects.get(uri=uris[i]),
                                 set_prefix=instance.set_index,
                                 set_index=set_index,

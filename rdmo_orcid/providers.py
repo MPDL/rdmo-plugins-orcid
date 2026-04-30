@@ -35,7 +35,8 @@ class OrcidProvider(Provider):
                     return [
                         {
                             'id': item['orcid-id'],
-                            'text': self.get_text(item)
+                            'text': self.get_text(item),
+                            'help': self.get_help(item),
                         } for item in data['expanded-result']
                     ]
 
@@ -46,12 +47,14 @@ class OrcidProvider(Provider):
         orcid_id = item['orcid-id']
         orcid_img = static('accounts/img/orcid_16x16.png')
         orcid_link = f'<a href="https://orcid.org/{orcid_id}" target="_blank" ><img src="{orcid_img}" alt="orcid logo" /></a>'
-        # text = '{given-names} {family-names} {orcid_link}'.format(**item, orcid_link=orcid_link)
-        text = '{given-names} {family-names}'.format(**item)
+        text = '{given-names} {family-names} {orcid_link}'.format(**item, orcid_link=orcid_link)
+        
+        return text
+
+    def get_help(self, item):
         if item.get('institution-name'):
             institutions = ', '.join(item['institution-name'][:2])
-            text += f' ({institutions})'
-        return text
+            return f'({institutions})'
 
     def get_search(self, search):
         search = search.removeprefix('https://orcid.org/')

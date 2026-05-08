@@ -9,16 +9,14 @@ from rdmo.options.models import Option
 from rdmo.projects.models import Value
 from rdmo.projects.signals import value_created, value_updated
 
+
 def get_ror_id(disambiguated_organization):
-    try:
-        disambiguation_source = disambiguated_organization.get('disambiguation-source')
-        disambiguation_id = disambiguated_organization.get('disambiguated-organization-identifier')
-    except:
-        return None
+    disambiguation_source = disambiguated_organization.get('disambiguation-source')
+    disambiguation_id = disambiguated_organization.get('disambiguated-organization-identifier')
 
     if disambiguation_source == 'ROR':
         return disambiguation_id
-    
+
     elif disambiguation_source in ['GRID', 'FUNDREF']:
         url = getattr(settings, 'ROR_PROVIDER_URL', 'https://api.ror.org/v1/').rstrip('/')
         headers = getattr(settings, 'ROR_PROVIDER_HEADERS', {})
@@ -78,10 +76,10 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                     'option': Option.objects.get(uri='https://rdmo.mpdl.mpg.de/terms/options/partner-types/person')
                 }
             )
-            
+
             for key, path in [
-                ('orcid', '/orcid-identifier/uri'), 
-                ('given_name', '/person/name/given-names/value'), 
+                ('orcid', '/orcid-identifier/uri'),
+                ('given_name', '/person/name/given-names/value'),
                 ('family_name', '/person/name/family-name/value')
             ]:
                 if key in attribute_map:
@@ -104,8 +102,10 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                         if dpath.get(summaries, '/employment-summary/end-date') is None:
                             a = dpath.get(summaries, '/employment-summary/organization/name')
                             role = dpath.get(summaries, '/employment-summary/role-title')
-                            disambiguated_organization = dpath.get(summaries, '/employment-summary/organization/disambiguated-organization')
-                            
+                            disambiguated_organization = dpath.get(
+                                summaries, '/employment-summary/organization/disambiguated-organization'
+                            )
+
                             ror_id = get_ror_id(disambiguated_organization)
                             if ror_id:
                                 employments.append((role, a, ror_id))
@@ -113,13 +113,13 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                                 employments.append((role, None, ror_id))
 
                 uris = [
-                    'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/role', 
+                    'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/role',
                     'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/affiliation',
                     'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/affiliation/ror-id'
                 ]
                 for set_index, employment in enumerate(employments):
                     for i, e in enumerate(employment):
-                        if e != None:
+                        if e is not None:
                             Value.objects.update_or_create(
                                 project=instance.project,
                                 snapshot=None,

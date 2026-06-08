@@ -45,8 +45,8 @@ ORCID_PROVIDER_MAP = [
 ```python
 ORCID_PROVIDER_MAP = [
     {
-        'orcid': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/orcid-autocomplete',
-        'orcid_id': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/orcid-id',
+        'orcid_autocomplete': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/orcid-autocomplete',
+        'orcid': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/orcid',
         'given_name': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/given-name',
         'family_name': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/family-name',
         'employment': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/employment',

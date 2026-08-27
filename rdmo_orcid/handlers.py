@@ -20,8 +20,8 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
     if kwargs.get('raw'):
         return
 
-    # check if this value instance has an external_id
-    if not instance.external_id:
+    # check if this value instance has an external_id or has an attribute (it may have been deleted)
+    if not instance.external_id or instance.attribute_id is None:
         return
 
     # loop over ORCID_PROVIDER_MAP and check if the value instance attribute is found

@@ -1,3 +1,5 @@
+# VERSION = __version__ = '1.0.0'
+
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _version
 

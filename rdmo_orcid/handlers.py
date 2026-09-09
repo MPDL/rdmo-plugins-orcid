@@ -34,6 +34,7 @@ def get_ror_id(disambiguated_organization):
 
     return None
 
+
 @receiver(value_created, sender=Value)
 @receiver(value_updated, sender=Value)
 def orcid_handler(signal, sender, instance=None, **kwargs):
@@ -73,14 +74,14 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                 set_index=instance.set_index,
                 defaults={
                     'set_collection': True,
-                    'option': Option.objects.get(uri='https://rdmo.mpdl.mpg.de/terms/options/partner-types/person')
-                }
+                    'option': Option.objects.get(uri='https://rdmo.mpdl.mpg.de/terms/options/partner-types/person'),
+                },
             )
 
             for key, path in [
                 ('orcid', '/orcid-identifier/uri'),
                 ('given_name', '/person/name/given-names/value'),
-                ('family_name', '/person/name/family-name/value')
+                ('family_name', '/person/name/family-name/value'),
             ]:
                 if key in attribute_map:
                     Value.objects.update_or_create(
@@ -89,10 +90,7 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                         attribute=Attribute.objects.get(uri=attribute_map[key]),
                         set_prefix=instance.set_prefix,
                         set_index=instance.set_index,
-                        defaults={
-                            'text': dpath.get(data, path),
-                            'set_collection': True
-                        }
+                        defaults={'text': dpath.get(data, path), 'set_collection': True},
                     )
 
             if 'employment' in attribute_map:
@@ -115,7 +113,7 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                 uris = [
                     'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/role',
                     'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/affiliation',
-                    'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/affiliation/ror-id'
+                    'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/affiliation/ror-id',
                 ]
                 for set_index, employment in enumerate(employments):
                     for i, e in enumerate(employment):
@@ -126,10 +124,7 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                                 attribute=Attribute.objects.get(uri=uris[i]),
                                 set_prefix=instance.set_index,
                                 set_index=set_index,
-                                defaults={
-                                    'text': e,
-                                    'set_collection': True
-                                }
+                                defaults={'text': e, 'set_collection': True},
                             )
 
                 # delete surplus collection_indexes
@@ -138,5 +133,5 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                         project=instance.project,
                         snapshot=None,
                         set_prefix=instance.set_index,
-                        attribute=Attribute.objects.get(uri=uri)
+                        attribute=Attribute.objects.get(uri=uri),
                     ).exclude(set_index__in=range(len(employments))).delete()

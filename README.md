@@ -44,7 +44,7 @@ ORCID_PROVIDER_MAP = [
 ]
 ```
 
-In this case, updating the ORCID search value for a contributor (`https://rdmo.mpdl.mpg.de/terms/domain/project/partner/orcid-autocomplete`) will update their orcid, given and family name and employment values (roles and affiliations) automatically. 
+In this case, updating the ORCID search value for a contributor (`https://rdmo.mpdl.mpg.de/terms/domain/project/partner/orcid-autocomplete`) will update their orcid, given and family name and employment values (roles and affiliations) automatically.
 
 
 ## General example

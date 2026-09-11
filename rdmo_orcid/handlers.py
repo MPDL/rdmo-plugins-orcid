@@ -75,7 +75,9 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                 set_index=instance.set_index,
                 defaults={
                     'set_collection': True,
-                    'option': Option.objects.get(uri='https://rdmorganiser.github.io/terms/options/partner-types/person'),
+                    'option': Option.objects.get(
+                        uri='https://rdmorganiser.github.io/terms/options/partner-types/person'
+                    ),
                 },
             )
 
@@ -104,7 +106,9 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
                             summaries, '/employment-summary/organization/disambiguated-organization'
                         )
 
-                        ror_id = get_ror_id(disambiguated_organization)
+                        ror_id = (
+                            get_ror_id(disambiguated_organization) if disambiguated_organization is not None else None
+                        )
                         if ror_id:
                             employments.append((role, a, ror_id))
                         else:
@@ -127,7 +131,7 @@ def orcid_handler(signal, sender, instance=None, **kwargs):
             # delete surplus collection_indexes
             uris = [
                 'https://rdmorganiser.github.io/terms/domain/project/contributor/organization/ror-autocomplete',
-                *[uri for key, uri in attribute_map.items() if key in organization_attribute_keys]
+                *[uri for key, uri in attribute_map.items() if key in organization_attribute_keys],
             ]
             for uri in uris:
                 Value.objects.filter(

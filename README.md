@@ -35,11 +35,14 @@ ORCID_PROVIDER_URL = 'https://pub.orcid.org/v3.0/'
 
 ORCID_PROVIDER_MAP = [
     {
-        'orcid_autocomplete': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/orcid-autocomplete',
-        'orcid': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/orcid',
-        'given_name': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/given-name',
-        'family_name': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/family-name',
-        'employment': 'https://rdmo.mpdl.mpg.de/terms/domain/project/partner/employment',
+        'orcid_autocomplete': 'https://rdmorganiser.github.io/terms/domain/project/contributor/orcid-autocomplete',
+        'orcid': 'https://rdmorganiser.github.io/terms/domain/project/contributor/orcid',
+        'type': 'https://rdmorganiser.github.io/terms/domain/project/contributor/person_or_entity',
+        'given_name': 'https://rdmorganiser.github.io/terms/domain/project/contributor/given_name',
+        'family_name': 'https://rdmorganiser.github.io/terms/domain/project/contributor/family_name',
+        'role': 'https://rdmorganiser.github.io/terms/domain/project/contributor/role',
+        'organization': 'https://rdmorganiser.github.io/terms/domain/project/contributor/organization',
+        'ror': 'https://rdmorganiser.github.io/terms/domain/project/contributor/organization/ror'
     }
 ]
 ```
